@@ -1,8 +1,8 @@
 //
-//  AppDelegate.swift
+//  Item.swift
 //  Todoey
 //
-//  Created by Weldon Malbrough on 7/31/18.
+//  Created by Weldon Malbrough on 8/9/18.
 //  Copyright © 2018 Weldon Malbrough. All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,21 +31,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import UIKit
+import Foundation
 import RealmSwift
 
-@UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
-  var window: UIWindow?
-  
-  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-//    print(Realm.Configuration.defaultConfiguration.fileURL!)
-    do {
-      _ = try Realm()
-    } catch {
-      print("Error initializing new Realm => \(error)")
-    }
-    return true
-  }
+class Item: Object {
+  @objc dynamic var title: String = ""
+  @objc dynamic var done: Bool = false
+  @objc dynamic var dateCreated: Date?
+  var parentCategory = LinkingObjects(fromType: Category.self, property: "items")
 }
-
