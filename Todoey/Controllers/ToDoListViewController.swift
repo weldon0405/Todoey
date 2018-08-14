@@ -30,7 +30,7 @@
 import UIKit
 import RealmSwift
 
-class ToDoListViewController: UITableViewController {
+class ToDoListViewController: SwipeTableViewController {
     
   var todoItems: Results<Item>?
   let realm = try! Realm()
@@ -43,20 +43,19 @@ class ToDoListViewController: UITableViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+//    print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
   }
   
   //MARK: - TableView DataSource Methods
   /***************************************************************/
   
-  //TODO: Declare numberOfRowsInSection here:
   override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
     return todoItems?.count ?? 1
   }
   
-  //TODO: Declare cellForRowAtIndexPath here:
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+//    let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+    let cell = super.tableView(tableView, cellForRowAt: indexPath)
     if let item = todoItems?[indexPath.row] {
       cell.textLabel?.text = item.title
       cell.accessoryType = item.done ? .checkmark : .none
@@ -66,6 +65,12 @@ class ToDoListViewController: UITableViewController {
     return cell
   }
   
+//  override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//    let cell = super.tableView(tableView, cellForRowAt: indexPath)
+//    cell.textLabel?.text = categories?[indexPath.row].name ?? "Add a category to begin"
+//    return cell
+//  }
+  
   //MARK: - TableView Delegate Methods
   /***************************************************************/
   
@@ -73,8 +78,7 @@ class ToDoListViewController: UITableViewController {
     if let item = todoItems?[indexPath.row] {
       do {
         try realm.write {
-          realm.delete(item)
-//          item.done = !item.done
+          item.done = !item.done
         }
       } catch {
         print("Error saving done status => \(error)")
@@ -124,6 +128,33 @@ class ToDoListViewController: UITableViewController {
     todoItems = selectedCategory?.items.sorted(byKeyPath: "dateCreated", ascending: true)
     tableView.reloadData()
   }
+  
+  //MARK: - Delete Data From Swipe
+  /***************************************************************/
+  
+  override func updateModel(at indexPath: IndexPath) {
+    if let itemForDeletion = todoItems?[indexPath.row] {
+      do {
+        try realm.write {
+          realm.delete(itemForDeletion)
+        }
+      } catch {
+        print("Error deleting item => \(error)")
+      }
+    }
+  }
+  
+//  override func updateModel(at indexPath: IndexPath) {
+//    if let categoryForDeletion = self.categories?[indexPath.row] {
+//      do {
+//        try self.realm.write {
+//          self.realm.delete(categoryForDeletion)
+//        }
+//      } catch {
+//        print("Error deleting category => \(error)")
+//      }
+//    }
+//  }
   
 }
 
