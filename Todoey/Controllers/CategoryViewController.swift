@@ -34,6 +34,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class CategoryViewController: SwipeTableViewController {
   let realm = try! Realm()
@@ -42,6 +43,7 @@ class CategoryViewController: SwipeTableViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     loadCategories()
+    tableView.separatorStyle = .none
   }
     
   //MARK: - TableView Data Source methods
@@ -55,7 +57,11 @@ class CategoryViewController: SwipeTableViewController {
   //TODO: cellForRowAtPath
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
     let cell = super.tableView(tableView, cellForRowAt: indexPath)
-    cell.textLabel?.text = categories?[indexPath.row].name ?? "Add a category to begin"
+    if let category = categories?[indexPath.row] {
+      cell.textLabel?.text = category.name
+      cell.textLabel?.textColor = ContrastColorOf(HexColor(category.categoryColor)!, returnFlat: true)
+      cell.backgroundColor = UIColor(hexString: category.categoryColor)
+    }
     return cell
   }
   
@@ -101,14 +107,15 @@ class CategoryViewController: SwipeTableViewController {
     var textField = UITextField()
     let alert = UIAlertController(title: "Add New Category", message: "", preferredStyle: .alert)
     let action = UIAlertAction(title: "Add Category", style: .default) { (action) in
-        let newCategory = Category()
-        newCategory.name = textField.text!
-        self.save(category: newCategory)
+      let newCategory = Category()
+      newCategory.name = textField.text!
+      newCategory.categoryColor = RandomFlatColor().hexValue()
+      self.save(category: newCategory)
     }
   
     alert.addTextField { (alertTextField) in
-        alertTextField.placeholder = "Create New Category"
-        textField = alertTextField
+      alertTextField.placeholder = "Create New Category"
+      textField = alertTextField
     }
   
     alert.addAction(action)

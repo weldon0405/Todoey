@@ -1,3 +1,7 @@
+//
+// ToDoListViewController.swift
+//  Todoey
+//
 //  Created by Weldon Malbrough on 7/31/18.
 //  Copyright © 2018 Weldon Malbrough. All rights reserved.
 //
@@ -29,11 +33,14 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class ToDoListViewController: SwipeTableViewController {
     
   var todoItems: Results<Item>?
   let realm = try! Realm()
+  
+  @IBOutlet weak var searchBar: UISearchBar!
   
   var selectedCategory: Category? {
     didSet{
@@ -43,7 +50,36 @@ class ToDoListViewController: SwipeTableViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-//    print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+    tableView.separatorStyle = .none
+  }
+  
+  override func viewWillAppear(_ animated: Bool) {
+    
+    guard let categoryColor = selectedCategory?.categoryColor else {
+      fatalError("Selected Category Does Not Exist")
+    }
+    title = selectedCategory?.name
+    updateNavBar(withHexCode: categoryColor)
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    updateNavBar(withHexCode: "1D9BF6")
+  }
+  
+  //MARK: - Nav Bar Setup Methods
+  /***************************************************************/
+  
+  func updateNavBar(withHexCode colorHexCode: String) {
+    guard let navBar = navigationController?.navigationBar else {
+      fatalError("Navigation Controller Does Not Exist")
+    }
+    guard let navBarColor = HexColor(colorHexCode) else {
+      fatalError("Selected Category Color Does Not Exist")
+    }
+    navBar.barTintColor = navBarColor
+    navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
+    navBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor: ContrastColorOf(navBarColor, returnFlat: true)]
+    searchBar.barTintColor = navBarColor
   }
   
   //MARK: - TableView DataSource Methods
@@ -54,22 +90,20 @@ class ToDoListViewController: SwipeTableViewController {
   }
   
   override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//    let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
     let cell = super.tableView(tableView, cellForRowAt: indexPath)
     if let item = todoItems?[indexPath.row] {
       cell.textLabel?.text = item.title
+      let categoryColor = selectedCategory?.categoryColor
+      if let color = HexColor(categoryColor!)?.darken(byPercentage: CGFloat(indexPath.row) / CGFloat(todoItems!.count)) {
+       cell.backgroundColor = color
+        cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+      }
       cell.accessoryType = item.done ? .checkmark : .none
     } else {
       cell.textLabel?.text = "No Items Added"
     }
     return cell
   }
-  
-//  override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//    let cell = super.tableView(tableView, cellForRowAt: indexPath)
-//    cell.textLabel?.text = categories?[indexPath.row].name ?? "Add a category to begin"
-//    return cell
-//  }
   
   //MARK: - TableView Delegate Methods
   /***************************************************************/
@@ -143,18 +177,6 @@ class ToDoListViewController: SwipeTableViewController {
       }
     }
   }
-  
-//  override func updateModel(at indexPath: IndexPath) {
-//    if let categoryForDeletion = self.categories?[indexPath.row] {
-//      do {
-//        try self.realm.write {
-//          self.realm.delete(categoryForDeletion)
-//        }
-//      } catch {
-//        print("Error deleting category => \(error)")
-//      }
-//    }
-//  }
   
 }
 
